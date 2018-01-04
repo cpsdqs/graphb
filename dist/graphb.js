@@ -7534,7 +7534,7 @@ module.exports = class Eraser extends Tool {
   erase() {
     // bitmap
     const ctx = this.editor.currentLayer.ctx;
-    // duplicate code from Brush, except for this line:
+    ctx.globalCompositeOperation = 'destination-out';
     ctx.fillStyle = this.editor.backgroundColor.toCSS();
 
     let makeCircle = (x, y, r) => {
@@ -7565,6 +7565,7 @@ module.exports = class Eraser extends Tool {
       lastPoint = point;
     }
 
+    ctx.globalCompositeOperation = 'source-over';
     this.editor.currentLayer.dirty = true;
   }
 
