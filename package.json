@@ -1,0 +1,21 @@
+{
+  "name": "graphb",
+  "version": "0.0.0",
+  "description": "Simple bitmap drawing tool",
+  "main": "dist/graphb.js",
+  "author": "cpsdqs",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-do-expressions": "^6.22.0",
+    "babel-plugin-transform-function-bind": "^6.22.0",
+    "standard": "^10.0.3",
+    "webpack": "^3.7.1"
+  },
+  "dependencies": {
+    "arc-to": "^1.0.1",
+    "gl-matrix": "^2.4.0"
+  }
+}
