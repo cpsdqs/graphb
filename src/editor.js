@@ -41,7 +41,7 @@ module.exports = class Editor {
 
     this.canvas.node.style.cursor = 'none'
 
-    if (typeof this.canvas.onpointermove !== 'undefined') {
+    if (typeof this.canvas.node.onpointermove !== 'undefined') {
       this.canvas.node.addEventListener('pointerdown', this.onPointerDown)
       this.canvas.node.addEventListener('pointermove', this.onPointerMove)
       this.canvas.node.addEventListener('pointerup', this.onPointerUp)
