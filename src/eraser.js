@@ -1,6 +1,4 @@
-const { vec3, mat4 } = require('gl-matrix')
 const Tool = require('./tool')
-const Color = require('./color')
 
 module.exports = class Eraser extends Tool {
   constructor (...args) {

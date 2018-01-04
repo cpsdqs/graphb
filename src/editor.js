@@ -26,9 +26,12 @@ module.exports = class Editor {
     this.color = new Color(0, 0, 0, 1)
     this.backgroundColor = new Color(1, 1, 1, 1)
     this.pressureSensitive = true
+    this.smoothStroke = false
     this.tool = this.tools.brush
     this.resolvedTool = null
     this.cursorSize = null
+    this.cursorPos = [0, 0]
+    this.cursorTilt = [0, 0]
 
     this.currentLayer = canvas.image.children[0]
     this.tiltAmount = 0.3
@@ -94,6 +97,8 @@ module.exports = class Editor {
 
       lastGestureScale = e.scale
       lastGestureRotation = e.rotation
+
+      this.renderCursor()
     })
     this.canvas.node.addEventListener('gestureend', e => {
       e.preventDefault()
@@ -150,7 +155,9 @@ module.exports = class Editor {
     }
   }
 
-  renderCursor (x, y, dx, dy) {
+  renderCursor () {
+    const [x, y] = this.cursorPos
+    const [dx, dy] = this.cursorTilt
     const ctx = this.canvas.overlayCtx
     ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, this.canvas.overlay.width, this.canvas.overlay.height)
@@ -165,11 +172,14 @@ module.exports = class Editor {
 
     let scaleY = 1 + Math.hypot(dx, dy) / 40
 
-    ctx.strokeStyle = '#000'
+    ctx.strokeStyle = '#fff'
     ctx.lineWidth = 2
     ctx.beginPath()
 
-    let radius = this.getCursorSize() / 2
+    const transform = this.canvas.context.transform
+    let matrixScale = Math.hypot(transform[0], transform[1]) // hope it's uniform
+
+    let radius = this.getCursorSize() / 2 * matrixScale
     let points = arc(0, 0, radius, 0, Math.PI * 2)
     let first = true
     for (let point of points) {
@@ -184,6 +194,14 @@ module.exports = class Editor {
     ctx.stroke()
 
     ctx.restore()
+
+    if (this.down && this.smoothStroke) {
+      ctx.strokeStyle = '#f0f'
+      ctx.beginPath()
+      ctx.moveTo(0, 0)
+      ctx.lineTo(this.lastMouse[0] - x, this.lastMouse[1] - y)
+      ctx.stroke()
+    }
   }
 
   createPreviewStroke () {
@@ -205,6 +223,13 @@ module.exports = class Editor {
     return 1 - 1 / (delta / 50 + 1.4)
   }
 
+  getBiasForDelta (dx, dy) {
+    const distance = Math.hypot(dx, dy)
+    const angle = Math.atan2(dy, dx)
+    const bias = distance / 10
+    return [bias * Math.cos(angle), bias * Math.sin(angle)]
+  }
+
   onPointerDown = e => {
     this.down = 'pointer'
 
@@ -217,10 +242,13 @@ module.exports = class Editor {
     this.previewStrokes = []
     this.createPreviewStroke()
 
+    this.cursorPos = [e.offsetX, e.offsetY]
+    this.cursorTilt = [e.tiltX, e.tiltY]
     this.cursorSize = e.pointerType === 'mouse'
       ? this.previewMaxWidth
       : e.pressure * this.previewMaxWidth
-    this.renderCursor(e.offsetX, e.offsetY, e.tiltX, e.tiltY)
+
+    this.renderCursor()
 
     let [x, y] = this.projectPoint([e.offsetX, e.offsetY])
 
@@ -246,13 +274,27 @@ module.exports = class Editor {
     if (!this.pressureSensitive) pressure = 1
 
     this.cursorSize = pressure * this.previewMaxWidth
-    this.renderCursor(e.offsetX, e.offsetY, e.tiltX, e.tiltY)
+
+    if (this.down && this.smoothStroke) {
+      const [lastX, lastY] = this.cursorPos
+      const [biasX, biasY] = this.getBiasForDelta(e.offsetX - lastX, e.offsetY - lastY)
+      this.cursorPos[0] += biasX
+      this.cursorPos[1] += biasY
+
+      const [lastTiltX, lastTiltY] = this.cursorTilt
+      const [tiltBiasX, tiltBiasY] = this.getBiasForDelta(e.tiltX - lastTiltX, e.tiltY - lastTiltY)
+      this.cursorTilt[0] += tiltBiasX
+      this.cursorTilt[1] += tiltBiasY
+    } else {
+      this.cursorPos = [e.offsetX, e.offsetY]
+      this.cursorTilt = [e.tiltX, e.tiltY]
+    }
 
     if (this.down !== 'pointer') return
 
     // TODO: deduplicate points
 
-    let [x, y] = this.projectPoint([e.offsetX, e.offsetY])
+    let [x, y] = this.projectPoint(this.cursorPos)
 
     let vec = [x, y].map((x, i) => x - this.lastPoint[i])
     let angle = Math.atan2(...vec)
@@ -262,8 +304,8 @@ module.exports = class Editor {
     // -pi/2      pi/2
     //        0
 
-    let tiltAngle = Math.atan2(e.tiltX, -e.tiltY)
-    let tiltLength = Math.hypot(e.tiltX, e.tiltY) / 100
+    let tiltAngle = Math.atan2(this.cursorTilt[0], -this.cursorTilt[1])
+    let tiltLength = Math.hypot(...this.cursorTilt) / 100
 
     // left normal vector
     let vecLeft = [Math.cos(angle + Math.PI / 2), Math.sin(angle + Math.PI / 2)]
@@ -301,12 +343,22 @@ module.exports = class Editor {
     for (let event of events) this.handleSinglePointerMove(event)
 
     this.lastMouse = [e.offsetX, e.offsetY]
+    this.renderCursor()
     this.canvas.render()
+
+    clearTimeout(this._scheduledPointerMove)
+    if (this.down && this.smoothStroke) {
+      this._scheduledPointerMove = setTimeout(() => {
+        this.onPointerMove(e)
+      }, 50)
+    }
   }
 
   onPointerUp = e => {
     if (this.down !== 'pointer') return
     this.down = null
+
+    clearTimeout(this._scheduledPointerMove)
 
     let pressure = e.pointerType === 'mouse'
       ? this.getPressureForDelta([e.offsetX, e.offsetY], this.lastMouse)
@@ -319,9 +371,16 @@ module.exports = class Editor {
     this.previewStroke.parentNode.removeChild(this.previewStroke)
     this.previewStroke = null
 
-    let [x, y] = this.projectPoint([e.offsetX, e.offsetY])
+    if (this.smoothStroke) {
 
-    this.renderCursor(e.offsetX, e.offsetY, e.tiltX, e.tiltY)
+    } else {
+      this.cursorPos = [e.offsetX, e.offsetY]
+      this.cursorTilt = [e.tiltX, e.tiltY]
+    }
+
+    let [x, y] = this.projectPoint(this.cursorPos)
+
+    this.renderCursor()
     this.resolvedTool.strokeEnd(x, y, left, right, this.roughLength, e)
     this.resolvedTool = null
     this.lastMouse = [e.offsetX, e.offsetY]
@@ -330,7 +389,8 @@ module.exports = class Editor {
 
   onPointerOut = e => {
     this.onPointerUp(e)
-    this.renderCursor(-1, -1, 0, 0)
+    this.cursorPos = [-1, -1]
+    this.renderCursor()
   }
 
   onMouseDown = e => {

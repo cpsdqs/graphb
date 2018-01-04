@@ -1,6 +1,4 @@
-const { vec2, mat2d } = require('gl-matrix')
 const Tool = require('./tool')
-const Color = require('./color')
 const Bitmap = require('./bitmap')
 
 module.exports = class Brush extends Tool {
@@ -11,6 +9,13 @@ module.exports = class Brush extends Tool {
 
     this.size = 10
     this.flow = 1
+    this.spacing = 1
+  }
+
+  stamp (ctx, x, y, radius) {
+    ctx.beginPath()
+    ctx.arc(x, y, radius, 0, 2 * Math.PI)
+    ctx.fill()
   }
 
   stroke () {
@@ -23,13 +28,7 @@ module.exports = class Brush extends Tool {
     opaqueColor.alpha = this.flow
     ctx.fillStyle = opaqueColor.toCSS()
 
-    let makeCircle = (x, y, r) => {
-      ctx.beginPath()
-      ctx.arc(x, y, r, 0, 2 * Math.PI)
-      ctx.fill()
-    }
-
-    let spacing = 1
+    const spacing = this.spacing
     let lastPoint = null
     for (let point of this.points) {
       let radius = (point.left + point.right) / 2
@@ -43,7 +42,8 @@ module.exports = class Brush extends Tool {
         let lastRadius = (lastPoint.left + lastPoint.right) / 2
 
         for (let x = 0; x < length; x += spacing) {
-          makeCircle(
+          this.stamp(
+            ctx,
             lastPoint.x + cosAngle * x,
             lastPoint.y + sinAngle * x,
             lastRadius + (radius - lastRadius) * (x / length)
@@ -51,7 +51,7 @@ module.exports = class Brush extends Tool {
         }
       }
 
-      makeCircle(point.x, point.y, radius)
+      this.stamp(ctx, point.x, point.y, radius)
       lastPoint = point
     }
 

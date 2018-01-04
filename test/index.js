@@ -245,9 +245,21 @@ document.body.appendChild(genericOptions)
     ps.type = 'checkbox'
     ps.max = 200
     ps.min = 1
-    ps.checked = true
+    ps.checked = editor.pressureSensitive
 
     ps.addEventListener('change', () => {
         editor.pressureSensitive = ps.checked
+    })
+
+    genericOptions.appendChild(new Text('Smooth stroke: '))
+    const ss = document.createElement('input')
+    genericOptions.appendChild(ss)
+    ss.type = 'checkbox'
+    ss.max = 200
+    ss.min = 1
+    ss.checked = editor.smoothStroke
+
+    ss.addEventListener('change', () => {
+        editor.smoothStroke = ss.checked
     })
 }

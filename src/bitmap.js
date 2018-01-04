@@ -1,4 +1,3 @@
-const { mat2d } = require('gl-matrix')
 const Layer = require('./layer')
 
 module.exports = class BitmapLayer extends Layer {
@@ -40,7 +39,7 @@ module.exports = class BitmapLayer extends Layer {
   loadImage (imageData, mime) {
     let binaryString = ''
     for (let i = 0; i < imageData.length; i++) binaryString += String.fromCharCode(imageData[i])
-    let imageURL = `data:${mime};base64,${btoa(binaryString)}`
+    let imageURL = `data:${mime};base64,${window.btoa(binaryString)}`
     let image = new window.Image()
     image.addEventListener('load', e => {
       this.ctx.drawImage(image, 0, 0)
@@ -90,7 +89,7 @@ module.exports = class BitmapLayer extends Layer {
   serialize () {
     let dataURL = this.image.toDataURL().replace(/^data:/, '')
     let mime = dataURL.substr(0, dataURL.indexOf(';'))
-    let binaryString = atob(dataURL.replace(/^.+(;|,)/, ''))
+    let binaryString = window.atob(dataURL.replace(/^.+(;|,)/, ''))
     let bytes = []
     for (let i = 0; i < binaryString.length; i++) {
       bytes.push(binaryString.charCodeAt(i))

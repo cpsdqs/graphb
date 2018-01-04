@@ -3,17 +3,18 @@ const Image = require('./image')
 
 module.exports = class Canvas {
   constructor (node) {
-    this.node = node;
+    this.node = node
 
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
 
     this.overlay = document.createElement('canvas')
     this.overlayCtx = this.overlay.getContext('2d')
+    this.overlay.style.mixBlendMode = 'difference'
 
     if (this.node) {
-      this.node.appendChild(this.canvas);
-      this.node.appendChild(this.overlay);
+      this.node.appendChild(this.canvas)
+      this.node.appendChild(this.overlay)
     }
 
     this.context = {
@@ -21,6 +22,8 @@ module.exports = class Canvas {
       height: 0,
       transform: mat2d.create()
     }
+
+    this.backdropStyle = '#aaa'
 
     this._image = new Image()
     this.updateSize()
@@ -47,7 +50,7 @@ module.exports = class Canvas {
 
   set image (v) {
     this._image = v
-    this.node.dispatchEvent(new Event('image-change'))
+    this.node.dispatchEvent(new window.Event('image-change'))
     this.updateSize()
     this.render()
   }
@@ -67,8 +70,15 @@ module.exports = class Canvas {
   }
 
   render () {
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+    this.ctx.fillStyle = this.backdropStyle
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+    const matrixScale = Math.hypot(this.context.transform[0], this.context.transform[1])
+
+    this.ctx.imageSmoothingEnabled = matrixScale < 1
     this.image.render(this.ctx, this.getTransform(), this.context)
   }
 }

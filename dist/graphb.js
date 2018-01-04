@@ -143,123 +143,9 @@ function equals(a, b) {
 
 /***/ }),
 /* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_matrix_common__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__gl_matrix_mat2__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__gl_matrix_mat2d__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__gl_matrix_mat3__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__gl_matrix_vec2__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__ = __webpack_require__(7);
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "glMatrix", function() { return __WEBPACK_IMPORTED_MODULE_0__gl_matrix_common__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat2", function() { return __WEBPACK_IMPORTED_MODULE_1__gl_matrix_mat2__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat2d", function() { return __WEBPACK_IMPORTED_MODULE_2__gl_matrix_mat2d__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat3", function() { return __WEBPACK_IMPORTED_MODULE_3__gl_matrix_mat3__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat4", function() { return __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "quat", function() { return __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "vec2", function() { return __WEBPACK_IMPORTED_MODULE_6__gl_matrix_vec2__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "vec3", function() { return __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__; });
-/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "vec4", function() { return __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__; });
-/**
- * @fileoverview gl-matrix - High performance matrix and vector operations
- * @author Brandon Jones
- * @author Colin MacKenzie IV
- * @version 2.4.0
- */
-
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-// END HEADER
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = class Color {
-  constructor(r = 0, g = 0, b = 0, a = 1) {
-    this.alpha = +a;
-    this.red = +r;
-    this.green = +g;
-    this.blue = +b;
-  }
-
-  toCSS() {
-    return `rgba(${this.red * 255}, ${this.green * 255}, ${this.blue * 255}, ${this.alpha})`;
-  }
-
-  toVec4() {
-    return [...this];
-  }
-
-  *[Symbol.iterator]() {
-    yield this.red;
-    yield this.green;
-    yield this.blue;
-    yield this.alpha;
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'Color';
-  }
-
-  clone() {
-    return new Color(...this);
-  }
-
-  serialize() {
-    let color = 255 - this.alpha * 255 | 0;
-    color |= this.red * 255 << 8;
-    color |= this.green * 255 << 8;
-    color |= this.blue * 255 << 8;
-    return color;
-  }
-
-  static deserialize(color) {
-    if (color === null || color === undefined) return null;
-    return new Color((color >> 8 & 0xFF) / 255, (color >> 16 & 0xFF) / 255, (color >> 24) / 255, 1 - (color & 0xFF) / 255);
-  }
-};
-
-/***/ }),
-/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { mat2d } = __webpack_require__(1);
-const Layer = __webpack_require__(4);
+const Layer = __webpack_require__(2);
 
 module.exports = class BitmapLayer extends Layer {
   constructor(width, height) {
@@ -304,7 +190,7 @@ module.exports = class BitmapLayer extends Layer {
   loadImage(imageData, mime) {
     let binaryString = '';
     for (let i = 0; i < imageData.length; i++) binaryString += String.fromCharCode(imageData[i]);
-    let imageURL = `data:${mime};base64,${btoa(binaryString)}`;
+    let imageURL = `data:${mime};base64,${window.btoa(binaryString)}`;
     let image = new window.Image();
     image.addEventListener('load', e => {
       this.ctx.drawImage(image, 0, 0);
@@ -354,7 +240,7 @@ module.exports = class BitmapLayer extends Layer {
   serialize() {
     let dataURL = this.image.toDataURL().replace(/^data:/, '');
     let mime = dataURL.substr(0, dataURL.indexOf(';'));
-    let binaryString = atob(dataURL.replace(/^.+(;|,)/, ''));
+    let binaryString = window.atob(dataURL.replace(/^.+(;|,)/, ''));
     let bytes = [];
     for (let i = 0; i < binaryString.length; i++) {
       bytes.push(binaryString.charCodeAt(i));
@@ -384,7 +270,7 @@ module.exports = class BitmapLayer extends Layer {
 };
 
 /***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports) {
 
 var _class, _temp;
@@ -487,7 +373,71 @@ module.exports = registry.types.g = (_temp = _class = class Layer {
 }, _temp);
 
 /***/ }),
-/* 5 */
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__gl_matrix_common__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__gl_matrix_mat2__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__gl_matrix_mat2d__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__gl_matrix_mat3__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__gl_matrix_vec2__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__ = __webpack_require__(6);
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "glMatrix", function() { return __WEBPACK_IMPORTED_MODULE_0__gl_matrix_common__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat2", function() { return __WEBPACK_IMPORTED_MODULE_1__gl_matrix_mat2__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat2d", function() { return __WEBPACK_IMPORTED_MODULE_2__gl_matrix_mat2d__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat3", function() { return __WEBPACK_IMPORTED_MODULE_3__gl_matrix_mat3__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "mat4", function() { return __WEBPACK_IMPORTED_MODULE_4__gl_matrix_mat4__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "quat", function() { return __WEBPACK_IMPORTED_MODULE_5__gl_matrix_quat__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "vec2", function() { return __WEBPACK_IMPORTED_MODULE_6__gl_matrix_vec2__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "vec3", function() { return __WEBPACK_IMPORTED_MODULE_7__gl_matrix_vec3__; });
+/* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "vec4", function() { return __WEBPACK_IMPORTED_MODULE_8__gl_matrix_vec4__; });
+/**
+ * @fileoverview gl-matrix - High performance matrix and vector operations
+ * @author Brandon Jones
+ * @author Colin MacKenzie IV
+ * @version 2.4.0
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+// END HEADER
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1295,7 +1245,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2135,7 +2085,7 @@ const forEach = (function() {
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2797,11 +2747,10 @@ const forEach = (function() {
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { mat4 } = __webpack_require__(1);
-const Layer = __webpack_require__(4);
+const Layer = __webpack_require__(2);
 
 const version = '0.0.0';
 
@@ -2824,8 +2773,11 @@ module.exports = class Image extends Layer {
     };
   }
 
-  render(gl, transform, context) {
-    this.renderChildren(gl, transform, context);
+  render(ctx, transform, context) {
+    ctx.setTransform(...transform);
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    this.renderChildren(ctx, transform, context);
   }
 
   static deserialize(data) {
@@ -2837,6 +2789,55 @@ module.exports = class Image extends Layer {
     image.children = Layer.deserializeChildren(data.c, image);
 
     return image;
+  }
+};
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = class Color {
+  constructor(r = 0, g = 0, b = 0, a = 1) {
+    this.alpha = +a;
+    this.red = +r;
+    this.green = +g;
+    this.blue = +b;
+  }
+
+  toCSS() {
+    return `rgba(${this.red * 255}, ${this.green * 255}, ${this.blue * 255}, ${this.alpha})`;
+  }
+
+  toVec4() {
+    return [...this];
+  }
+
+  *[Symbol.iterator]() {
+    yield this.red;
+    yield this.green;
+    yield this.blue;
+    yield this.alpha;
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'Color';
+  }
+
+  clone() {
+    return new Color(...this);
+  }
+
+  serialize() {
+    let color = 255 - this.alpha * 255 | 0;
+    color |= this.red * 255 << 8;
+    color |= this.green * 255 << 8;
+    color |= this.blue * 255 << 8;
+    return color;
+  }
+
+  static deserialize(color) {
+    if (color === null || color === undefined) return null;
+    return new Color((color >> 8 & 0xFF) / 255, (color >> 16 & 0xFF) / 255, (color >> 24) / 255, 1 - (color & 0xFF) / 255);
   }
 };
 
@@ -2866,12 +2867,12 @@ module.exports = class Tool {
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Bitmap = __webpack_require__(3);
-const Canvas = __webpack_require__(16);
-const Color = __webpack_require__(2);
+const Bitmap = __webpack_require__(1);
+const Canvas = __webpack_require__(11);
+const Color = __webpack_require__(8);
 const Editor = __webpack_require__(17);
-const Image = __webpack_require__(8);
-const Layer = __webpack_require__(4);
+const Image = __webpack_require__(7);
+const Layer = __webpack_require__(2);
 
 const graphb = {
   Bitmap,
@@ -2886,6 +2887,93 @@ module.exports = window.graphb = graphb;
 
 /***/ }),
 /* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const { mat2d } = __webpack_require__(3);
+const Image = __webpack_require__(7);
+
+module.exports = class Canvas {
+  constructor(node) {
+    this.node = node;
+
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+
+    this.overlay = document.createElement('canvas');
+    this.overlayCtx = this.overlay.getContext('2d');
+    this.overlay.style.mixBlendMode = 'difference';
+
+    if (this.node) {
+      this.node.appendChild(this.canvas);
+      this.node.appendChild(this.overlay);
+    }
+
+    this.context = {
+      width: 0,
+      height: 0,
+      transform: mat2d.create()
+    };
+
+    this.backdropStyle = '#aaa';
+
+    this._image = new Image();
+    this.updateSize();
+  }
+
+  updateSize() {
+    this.canvas.width = this.image.width * window.devicePixelRatio;
+    this.canvas.height = this.image.height * window.devicePixelRatio;
+    this.canvas.style.width = `${this.image.width}px`;
+    this.canvas.style.height = `${this.image.height}px`;
+
+    this.overlay.width = this.canvas.width;
+    this.overlay.height = this.canvas.height;
+    this.overlay.style.width = this.canvas.style.width;
+    this.overlay.style.height = this.canvas.style.height;
+
+    this.context.width = this.image.width;
+    this.context.height = this.image.height;
+  }
+
+  get image() {
+    return this._image;
+  }
+
+  set image(v) {
+    this._image = v;
+    this.node.dispatchEvent(new window.Event('image-change'));
+    this.updateSize();
+    this.render();
+  }
+
+  resetTransform() {
+    this.context.transform = mat2d.create();
+  }
+
+  getTransform() {
+    const scale = window.devicePixelRatio;
+
+    return mat2d.multiply(mat2d.create(), mat2d.fromScaling(mat2d.create(), [scale, scale]), this.context.transform);
+  }
+
+  render() {
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.ctx.fillStyle = this.backdropStyle;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const matrixScale = Math.hypot(this.context.transform[0], this.context.transform[1]);
+
+    this.ctx.imageSmoothingEnabled = matrixScale < 1;
+    this.image.render(this.ctx, this.getTransform(), this.context);
+  }
+};
+
+window.mat2d = mat2d;
+
+/***/ }),
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3355,7 +3443,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3857,7 +3945,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5595,7 +5683,7 @@ const sub = subtract;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5616,9 +5704,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (immutable) */ __webpack_exports__["fromEuler"] = fromEuler;
 /* harmony export (immutable) */ __webpack_exports__["str"] = str;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mat3__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vec3__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__vec4__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__mat3__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vec3__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__vec4__ = __webpack_require__(6);
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6286,7 +6374,7 @@ const setAxes = (function() {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6929,90 +7017,13 @@ const forEach = (function() {
 
 
 /***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const { mat2d } = __webpack_require__(1);
-const Image = __webpack_require__(8);
-
-module.exports = class Canvas {
-  constructor(node) {
-    this.node = node;
-
-    this.canvas = document.createElement('canvas');
-    this.ctx = this.canvas.getContext('2d');
-
-    this.overlay = document.createElement('canvas');
-    this.overlayCtx = this.overlay.getContext('2d');
-
-    if (this.node) {
-      this.node.appendChild(this.canvas);
-      this.node.appendChild(this.overlay);
-    }
-
-    this.context = {
-      width: 0,
-      height: 0,
-      transform: mat2d.create()
-    };
-
-    this._image = new Image();
-    this.updateSize();
-  }
-
-  updateSize() {
-    this.canvas.width = this.image.width * window.devicePixelRatio;
-    this.canvas.height = this.image.height * window.devicePixelRatio;
-    this.canvas.style.width = `${this.image.width}px`;
-    this.canvas.style.height = `${this.image.height}px`;
-
-    this.overlay.width = this.canvas.width;
-    this.overlay.height = this.canvas.height;
-    this.overlay.style.width = this.canvas.style.width;
-    this.overlay.style.height = this.canvas.style.height;
-
-    this.context.width = this.image.width;
-    this.context.height = this.image.height;
-  }
-
-  get image() {
-    return this._image;
-  }
-
-  set image(v) {
-    this._image = v;
-    this.node.dispatchEvent(new Event('image-change'));
-    this.updateSize();
-    this.render();
-  }
-
-  resetTransform() {
-    this.context.transform = mat2d.create();
-  }
-
-  getTransform() {
-    const scale = window.devicePixelRatio;
-
-    return mat2d.multiply(mat2d.create(), mat2d.fromScaling(mat2d.create(), [scale, scale]), this.context.transform);
-  }
-
-  render() {
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.image.render(this.ctx, this.getTransform(), this.context);
-  }
-};
-
-window.mat2d = mat2d;
-
-/***/ }),
 /* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { vec2, mat2d } = __webpack_require__(1);
+const { vec2, mat2d } = __webpack_require__(3);
 const arc = __webpack_require__(18);
-const Bitmap = __webpack_require__(3);
-const Color = __webpack_require__(2);
+const Bitmap = __webpack_require__(1);
+const Color = __webpack_require__(8);
 const Brush = __webpack_require__(19);
 const Eraser = __webpack_require__(20);
 
@@ -7034,8 +7045,11 @@ module.exports = class Editor {
       this.previewStrokes = [];
       this.createPreviewStroke();
 
+      this.cursorPos = [e.offsetX, e.offsetY];
+      this.cursorTilt = [e.tiltX, e.tiltY];
       this.cursorSize = e.pointerType === 'mouse' ? this.previewMaxWidth : e.pressure * this.previewMaxWidth;
-      this.renderCursor(e.offsetX, e.offsetY, e.tiltX, e.tiltY);
+
+      this.renderCursor();
 
       let [x, y] = this.projectPoint([e.offsetX, e.offsetY]);
 
@@ -7064,12 +7078,22 @@ module.exports = class Editor {
       for (let event of events) this.handleSinglePointerMove(event);
 
       this.lastMouse = [e.offsetX, e.offsetY];
+      this.renderCursor();
       this.canvas.render();
+
+      clearTimeout(this._scheduledPointerMove);
+      if (this.down && this.smoothStroke) {
+        this._scheduledPointerMove = setTimeout(() => {
+          this.onPointerMove(e);
+        }, 50);
+      }
     };
 
     this.onPointerUp = e => {
       if (this.down !== 'pointer') return;
       this.down = null;
+
+      clearTimeout(this._scheduledPointerMove);
 
       let pressure = e.pointerType === 'mouse' ? this.getPressureForDelta([e.offsetX, e.offsetY], this.lastMouse) : e.pressure;
       if (!this.pressureSensitive) pressure = 1;
@@ -7080,9 +7104,14 @@ module.exports = class Editor {
       this.previewStroke.parentNode.removeChild(this.previewStroke);
       this.previewStroke = null;
 
-      let [x, y] = this.projectPoint([e.offsetX, e.offsetY]);
+      if (this.smoothStroke) {} else {
+        this.cursorPos = [e.offsetX, e.offsetY];
+        this.cursorTilt = [e.tiltX, e.tiltY];
+      }
 
-      this.renderCursor(e.offsetX, e.offsetY, e.tiltX, e.tiltY);
+      let [x, y] = this.projectPoint(this.cursorPos);
+
+      this.renderCursor();
       this.resolvedTool.strokeEnd(x, y, left, right, this.roughLength, e);
       this.resolvedTool = null;
       this.lastMouse = [e.offsetX, e.offsetY];
@@ -7091,7 +7120,8 @@ module.exports = class Editor {
 
     this.onPointerOut = e => {
       this.onPointerUp(e);
-      this.renderCursor(-1, -1, 0, 0);
+      this.cursorPos = [-1, -1];
+      this.renderCursor();
     };
 
     this.onMouseDown = e => {
@@ -7145,9 +7175,12 @@ module.exports = class Editor {
     this.color = new Color(0, 0, 0, 1);
     this.backgroundColor = new Color(1, 1, 1, 1);
     this.pressureSensitive = true;
+    this.smoothStroke = false;
     this.tool = this.tools.brush;
     this.resolvedTool = null;
     this.cursorSize = null;
+    this.cursorPos = [0, 0];
+    this.cursorTilt = [0, 0];
 
     this.currentLayer = canvas.image.children[0];
     this.tiltAmount = 0.3;
@@ -7213,6 +7246,8 @@ module.exports = class Editor {
 
       lastGestureScale = e.scale;
       lastGestureRotation = e.rotation;
+
+      this.renderCursor();
     });
     this.canvas.node.addEventListener('gestureend', e => {
       e.preventDefault();
@@ -7263,7 +7298,9 @@ module.exports = class Editor {
     }
   }
 
-  renderCursor(x, y, dx, dy) {
+  renderCursor() {
+    const [x, y] = this.cursorPos;
+    const [dx, dy] = this.cursorTilt;
     const ctx = this.canvas.overlayCtx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.overlay.width, this.canvas.overlay.height);
@@ -7278,11 +7315,14 @@ module.exports = class Editor {
 
     let scaleY = 1 + Math.hypot(dx, dy) / 40;
 
-    ctx.strokeStyle = '#000';
+    ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.beginPath();
 
-    let radius = this.getCursorSize() / 2;
+    const transform = this.canvas.context.transform;
+    let matrixScale = Math.hypot(transform[0], transform[1]); // hope it's uniform
+
+    let radius = this.getCursorSize() / 2 * matrixScale;
     let points = arc(0, 0, radius, 0, Math.PI * 2);
     let first = true;
     for (let point of points) {
@@ -7296,6 +7336,14 @@ module.exports = class Editor {
     ctx.stroke();
 
     ctx.restore();
+
+    if (this.down && this.smoothStroke) {
+      ctx.strokeStyle = '#f0f';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(this.lastMouse[0] - x, this.lastMouse[1] - y);
+      ctx.stroke();
+    }
   }
 
   createPreviewStroke() {
@@ -7317,6 +7365,13 @@ module.exports = class Editor {
     return 1 - 1 / (delta / 50 + 1.4);
   }
 
+  getBiasForDelta(dx, dy) {
+    const distance = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+    const bias = distance / 10;
+    return [bias * Math.cos(angle), bias * Math.sin(angle)];
+  }
+
   handleSinglePointerMove(e) {
     var _context;
 
@@ -7324,13 +7379,27 @@ module.exports = class Editor {
     if (!this.pressureSensitive) pressure = 1;
 
     this.cursorSize = pressure * this.previewMaxWidth;
-    this.renderCursor(e.offsetX, e.offsetY, e.tiltX, e.tiltY);
+
+    if (this.down && this.smoothStroke) {
+      const [lastX, lastY] = this.cursorPos;
+      const [biasX, biasY] = this.getBiasForDelta(e.offsetX - lastX, e.offsetY - lastY);
+      this.cursorPos[0] += biasX;
+      this.cursorPos[1] += biasY;
+
+      const [lastTiltX, lastTiltY] = this.cursorTilt;
+      const [tiltBiasX, tiltBiasY] = this.getBiasForDelta(e.tiltX - lastTiltX, e.tiltY - lastTiltY);
+      this.cursorTilt[0] += tiltBiasX;
+      this.cursorTilt[1] += tiltBiasY;
+    } else {
+      this.cursorPos = [e.offsetX, e.offsetY];
+      this.cursorTilt = [e.tiltX, e.tiltY];
+    }
 
     if (this.down !== 'pointer') return;
 
     // TODO: deduplicate points
 
-    let [x, y] = this.projectPoint([e.offsetX, e.offsetY]);
+    let [x, y] = this.projectPoint(this.cursorPos);
 
     let vec = [x, y].map((x, i) => x - this.lastPoint[i]);
     let angle = Math.atan2(...vec);
@@ -7340,8 +7409,8 @@ module.exports = class Editor {
     // -pi/2      pi/2
     //        0
 
-    let tiltAngle = Math.atan2(e.tiltX, -e.tiltY);
-    let tiltLength = Math.hypot(e.tiltX, e.tiltY) / 100;
+    let tiltAngle = Math.atan2(this.cursorTilt[0], -this.cursorTilt[1]);
+    let tiltLength = Math.hypot(...this.cursorTilt) / 100;
 
     // left normal vector
     let vecLeft = [Math.cos(angle + Math.PI / 2), Math.sin(angle + Math.PI / 2)];
@@ -7425,10 +7494,8 @@ module.exports = function arc(x, y, radius, start, end, clockwise, steps, path) 
 /* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { vec2, mat2d } = __webpack_require__(1);
 const Tool = __webpack_require__(9);
-const Color = __webpack_require__(2);
-const Bitmap = __webpack_require__(3);
+const Bitmap = __webpack_require__(1);
 
 module.exports = class Brush extends Tool {
   constructor(...args) {
@@ -7438,6 +7505,13 @@ module.exports = class Brush extends Tool {
 
     this.size = 10;
     this.flow = 1;
+    this.spacing = 1;
+  }
+
+  stamp(ctx, x, y, radius) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fill();
   }
 
   stroke() {
@@ -7450,13 +7524,7 @@ module.exports = class Brush extends Tool {
     opaqueColor.alpha = this.flow;
     ctx.fillStyle = opaqueColor.toCSS();
 
-    let makeCircle = (x, y, r) => {
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, 2 * Math.PI);
-      ctx.fill();
-    };
-
-    let spacing = 1;
+    const spacing = this.spacing;
     let lastPoint = null;
     for (let point of this.points) {
       let radius = (point.left + point.right) / 2;
@@ -7470,11 +7538,11 @@ module.exports = class Brush extends Tool {
         let lastRadius = (lastPoint.left + lastPoint.right) / 2;
 
         for (let x = 0; x < length; x += spacing) {
-          makeCircle(lastPoint.x + cosAngle * x, lastPoint.y + sinAngle * x, lastRadius + (radius - lastRadius) * (x / length));
+          this.stamp(ctx, lastPoint.x + cosAngle * x, lastPoint.y + sinAngle * x, lastRadius + (radius - lastRadius) * (x / length));
         }
       }
 
-      makeCircle(point.x, point.y, radius);
+      this.stamp(ctx, point.x, point.y, radius);
       lastPoint = point;
     }
 
@@ -7518,9 +7586,7 @@ module.exports = class Brush extends Tool {
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { vec3, mat4 } = __webpack_require__(1);
 const Tool = __webpack_require__(9);
-const Color = __webpack_require__(2);
 
 module.exports = class Eraser extends Tool {
   constructor(...args) {

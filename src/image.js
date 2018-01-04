@@ -1,4 +1,3 @@
-const { mat4 } = require('gl-matrix')
 const Layer = require('./layer')
 
 const version = '0.0.0'
@@ -22,8 +21,11 @@ module.exports = class Image extends Layer {
     }
   }
 
-  render (gl, transform, context) {
-    this.renderChildren(gl, transform, context)
+  render (ctx, transform, context) {
+    ctx.setTransform(...transform)
+    ctx.clearRect(0, 0, this.width, this.height)
+
+    this.renderChildren(ctx, transform, context)
   }
 
   static deserialize (data) {
