@@ -52,38 +52,6 @@ const brushOptions = document.createElement('div')
         editor.tools.brush.size = size.value
     })
 
-    brushOptions.appendChild(new Text('r'))
-    const r = document.createElement('input')
-    brushOptions.appendChild(r)
-    r.type = 'number'
-    r.value = 0
-    r.max = 1
-    r.min = 0
-    r.step = 0.05
-    brushOptions.appendChild(new Text('g'))
-    const g = document.createElement('input')
-    brushOptions.appendChild(g)
-    g.type = 'number'
-    g.value = 0
-    g.max = 1
-    g.min = 0
-    g.step = 0.05
-    brushOptions.appendChild(new Text('b'))
-    const b = document.createElement('input')
-    brushOptions.appendChild(b)
-    b.type = 'number'
-    b.value = 0
-    b.max = 1
-    b.min = 0
-    b.step = 0.05
-    brushOptions.appendChild(new Text('opacity'))
-    const a = document.createElement('input')
-    brushOptions.appendChild(a)
-    a.type = 'number'
-    a.value = 1
-    a.max = 1
-    a.min = 0
-    a.step = 0.05
     brushOptions.appendChild(new Text('flow'))
     const f = document.createElement('input')
     brushOptions.appendChild(f)
@@ -92,15 +60,6 @@ const brushOptions = document.createElement('div')
     f.max = 1
     f.min = 0
     f.step = 0.05
-
-    let updateColor = () => {
-        editor.color = new window.graphb.Color(r.value, g.value, b.value, a.value)
-    }
-
-    r.addEventListener('input', updateColor)
-    g.addEventListener('input', updateColor)
-    b.addEventListener('input', updateColor)
-    a.addEventListener('input', updateColor)
 
     f.addEventListener('input', () => {
         editor.tools.brush.flow = +f.value
@@ -136,6 +95,7 @@ const createOption = (value, label) => {
 
 toolSelect.appendChild(createOption('brush', 'Brush'))
 toolSelect.appendChild(createOption('eraser', 'Eraser'))
+toolSelect.appendChild(createOption('fill', 'Fill'))
 
 toolSelect.addEventListener('change', () => {
     editor.tool = editor.tools[toolSelect.value]
@@ -262,4 +222,48 @@ document.body.appendChild(genericOptions)
     ss.addEventListener('change', () => {
         editor.smoothStroke = ss.checked
     })
+
+    genericOptions.appendChild(document.createElement('br'))
+
+    genericOptions.appendChild(new Text('r'))
+    const r = document.createElement('input')
+    genericOptions.appendChild(r)
+    r.type = 'number'
+    r.value = 0
+    r.max = 1
+    r.min = 0
+    r.step = 0.05
+    genericOptions.appendChild(new Text('g'))
+    const g = document.createElement('input')
+    genericOptions.appendChild(g)
+    g.type = 'number'
+    g.value = 0
+    g.max = 1
+    g.min = 0
+    g.step = 0.05
+    genericOptions.appendChild(new Text('b'))
+    const b = document.createElement('input')
+    genericOptions.appendChild(b)
+    b.type = 'number'
+    b.value = 0
+    b.max = 1
+    b.min = 0
+    b.step = 0.05
+    genericOptions.appendChild(new Text('opacity'))
+    const a = document.createElement('input')
+    genericOptions.appendChild(a)
+    a.type = 'number'
+    a.value = 1
+    a.max = 1
+    a.min = 0
+    a.step = 0.05
+
+    let updateColor = () => {
+        editor.color = new window.graphb.Color(r.value, g.value, b.value, a.value)
+    }
+
+    r.addEventListener('input', updateColor)
+    g.addEventListener('input', updateColor)
+    b.addEventListener('input', updateColor)
+    a.addEventListener('input', updateColor)
 }

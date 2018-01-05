@@ -4,6 +4,7 @@ const Bitmap = require('./bitmap')
 const Color = require('./color')
 const Brush = require('./brush')
 const Eraser = require('./eraser')
+const Fill = require('./fill')
 
 const distanceTo = function distanceToVector2D (b) {
   return Math.hypot(b[0] - this[0], b[1] - this[1])
@@ -20,7 +21,8 @@ module.exports = class Editor {
 
     this.tools = {
       brush: new Brush(this),
-      eraser: new Eraser(this)
+      eraser: new Eraser(this),
+      fill: new Fill(this)
     }
 
     this.color = new Color(0, 0, 0, 1)
@@ -215,6 +217,10 @@ module.exports = class Editor {
     roughColor.alpha = this.resolvedTool.flow || 1
     this.previewStroke.roughColor = roughColor.toCSS()
 
+    if (this.resolvedTool.wantsPreviewLayer) {
+      this.resolvedTool.previewLayer = this.previewStroke
+    }
+
     this.canvas.image.appendChild(this.previewStroke)
   }
 
@@ -257,7 +263,9 @@ module.exports = class Editor {
 
     let left = pressure * this.previewMaxWidth / 2
     let right = pressure * this.previewMaxWidth / 2
-    this.previewStroke.addRoughPoint(x, y, left, right, true)
+    if (!this.resolvedTool.wantsPreviewLayer) {
+      this.previewStroke.addRoughPoint(x, y, left, right, true)
+    }
 
     this.lastPoint = [x, y]
     this.roughLength = 0
@@ -265,6 +273,12 @@ module.exports = class Editor {
     this.resolvedTool.strokeStart(x, y, left, right, this.roughLength, e)
     this.lastMouse = [e.offsetX, e.offsetY]
     this.canvas.render()
+
+    if (this.resolvedTool.wantsContinuous) {
+      this._scheduledPointerMove = setTimeout(() => {
+        this.onPointerMove(e)
+      }, 50)
+    }
   }
 
   handleSinglePointerMove (e) {
@@ -322,7 +336,9 @@ module.exports = class Editor {
     right += this.tiltAmount * Math.abs(vecRight.map((x, i) => x * tiltVector[i]).reduce((a, b) => a + b, 0) * this.previewMaxWidth * tiltLength)
 
     if (!e.isCoalescedEvent) {
-      this.previewStroke.addRoughPoint(x, y, left, right)
+      if (!this.resolvedTool.wantsPreviewLayer) {
+        this.previewStroke.addRoughPoint(x, y, left, right)
+      }
       this.cursorSize = left + right
     }
 
@@ -347,7 +363,7 @@ module.exports = class Editor {
     this.canvas.render()
 
     clearTimeout(this._scheduledPointerMove)
-    if (this.down && this.smoothStroke) {
+    if (this.down && (this.smoothStroke || this.resolvedTool.wantsContinuous)) {
       this._scheduledPointerMove = setTimeout(() => {
         this.onPointerMove(e)
       }, 50)
